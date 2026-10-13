@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 use anyhow::{Context, Result};
+use std::io::{Seek, SeekFrom};
 use tempfile::tempfile;
 use zip::{CompressionMethod, ZipArchive, ZipWriter, write::SimpleFileOptions};
 
@@ -60,7 +61,10 @@ pub fn rebuild_zip(in_file: std::fs::File) -> Result<(std::fs::File, Vec<String>
         eprintln!("Copied {filename} to {new_filename}");
     }
 
-    let out_file = writer.finish()?;
+    let mut out_file = writer.finish()?;
+    out_file
+        .seek(SeekFrom::Start(0))
+        .context("Failed to rewind output file")?;
 
     Ok((out_file, excluded_files))
 }
