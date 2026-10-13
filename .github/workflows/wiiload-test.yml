@@ -1,0 +1,34 @@
+name: Test wiiload rebuild_zip
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [wiiload-rewind]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: wiiload-rewind
+
+      - name: Install Rust (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run wiiload test (creates input.zip, calls rebuild_zip, writes output.zip)
+        run: cargo run --bin wiiload_test --verbose
+
+      - name: Upload rebuilt zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: rebuilt-zip
+          path: output.zip
